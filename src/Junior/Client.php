@@ -42,8 +42,8 @@ class Client {
             throw new Clientside\Exception("Mismatched request id");
         }
 
-        if(isset($response->error_code)) {
-            throw new Clientside\Exception("{$response->error_code} {$response->error_message}", $response->error_code);
+        if(isset($response->errorCode)) {
+            throw new Clientside\Exception("{$response->errorCode} {$response->errorMessage}", $response->errorCode);
         }
 
         return $response->result;
@@ -65,26 +65,26 @@ class Client {
     {
         $arr = array();
         $ids = array();
-        $all_notify = true;
+        $allNotify = true;
         foreach ($reqs as $req) {
             if ($req->id) {
-                $all_notify = false;
+                $allNotify = false;
                 $ids[] = $req->id;
             }
             $arr[] = $req->getArray();
         }
-        $response = $this->send(json_encode($arr), $all_notify);
+        $response = $this->send(json_encode($arr), $allNotify);
 
         // no response if batch is all notifications
-        if ($all_notify) {
+        if ($allNotify) {
             return true;
         }
 
         // check for missing ids and return responses in order of requests
-        $ordered_response = array();
+        $orderedResponse = array();
         foreach ($ids as $id) {
             if (array_key_exists($id, $response)) {
-                $ordered_response[] = $response[$id];
+                $orderedResponse[] = $response[$id];
                 unset($response[$id]);
             } else {
                 throw new Clientside\Exception("Missing id in response");
@@ -96,7 +96,7 @@ class Client {
             throw new Clientside\Exception("Extra id(s) in response");
         }
 
-        return $ordered_response;
+        return $orderedResponse;
     }
 
     // send raw json to the server
@@ -136,20 +136,20 @@ class Client {
         }
 
         // try to decode json
-        $json_response = $this->decodeJSON($response);
+        $jsonResponse = $this->decodeJSON($response);
 
         // handle response, create response object and return it
-        return $this->handleResponse($json_response);
+        return $this->handleResponse($jsonResponse);
     }
 
     // decode json throwing exception if unable
     function decodeJSON($json)
     {
-        $json_response = json_decode($json);
-        if ($json_response === null) {
+        $jsonResponse = json_decode($json);
+        if ($jsonResponse === null) {
             throw new Clientside\Exception("Unable to decode JSON response from: {$json}");
         }
-        return $json_response;
+        return $jsonResponse;
     }
 
     // handle the response and return a result or an error
@@ -157,11 +157,11 @@ class Client {
     {
         // recursion for batch
         if (is_array($response)) {
-            $response_arr = array();
+            $responseArr = array();
             foreach ($response as $res) {
-                $response_arr[$res->id] = $this->handleResponse($res);
+                $responseArr[$res->id] = $this->handleResponse($res);
             }
-            return $response_arr;
+            return $responseArr;
         }
 
         // return error response

@@ -30,8 +30,8 @@ class ServerTest extends PHPUnit_Framework_TestCase {
 
     public function setUp()
     {
-        $this->input_url = 'junior://input';
-        Spray::stub($this->input_url, array('body' => 'foo'));
+        $this->inputUrl = 'junior://input';
+        Spray::stub($this->inputUrl, array('body' => 'foo'));
     }
 
     public function tearDown()
@@ -39,25 +39,25 @@ class ServerTest extends PHPUnit_Framework_TestCase {
         Spray::reset();
     }
 
-    public function getMockServer($mock_request, $handle_request = true, $make_request = true)
+    public function getMockServer($mockRequest, $handleRequest = true, $makeRequest = true)
     {
         $server = $this->getMock('Junior\Server',
                                  array('handleRequest', 'makeRequest'),
                                  array(new TestClass()));
 
-        $server->input = $this->input_url;
+        $server->input = $this->inputUrl;
 
-        if ($handle_request) {
+        if ($handleRequest) {
             $server->returnValue = 'foo';
             $server->expects($this->once())
                    ->method('handleRequest')
                    ->will($this->returnValue($server->returnValue));
         }
 
-        if ($make_request) {
+        if ($makeRequest) {
             $server->expects($this->once())
                    ->method('makeRequest')
-                   ->will($this->returnValue($mock_request));
+                   ->will($this->returnValue($mockRequest));
         }
 
         return $server;
@@ -86,10 +86,10 @@ class ServerTest extends PHPUnit_Framework_TestCase {
     public function testInvokeMethodNamedParams()
     {
         $server = new Junior\Server(new TestClass());
-        $param_obj = $this->getMock('Object', null);
-        $param_obj->first = 10;
-        $param_obj->second = 5;
-        $this->assertEquals(5, $server->invokeMethod('testSub', $param_obj));
+        $paramObj = $this->getMock('Object', null);
+        $paramObj->first = 10;
+        $paramObj->second = 5;
+        $this->assertEquals(5, $server->invokeMethod('testSub', $paramObj));
     }
 
     public function testInvokeMethodNoParams()
@@ -114,8 +114,8 @@ class ServerTest extends PHPUnit_Framework_TestCase {
 
     public function testProcessGood()
     {
-        $mock_request = $this->getMock('Object', null);
-        $server = $this->getMockServer($mock_request);
+        $mockRequest = $this->getMock('Object', null);
+        $server = $this->getMockServer($mockRequest);
 
         $this->expectOutputString($server->returnValue);
 
@@ -124,25 +124,25 @@ class ServerTest extends PHPUnit_Framework_TestCase {
 
     public function testProcessError()
     {
-        $error_response = 'Error Response';
-        $mock_request = $this->getMock('Object', array('toResponseJSON'));
-        $mock_request->expects($this->once())
+        $errorResponse = 'Error Response';
+        $mockRequest = $this->getMock('Object', array('toResponseJSON'));
+        $mockRequest->expects($this->once())
                      ->method('toResponseJSON')
-                     ->will($this->returnValue($error_response));
-        $mock_request->error_code = 10;
-        $mock_request->error_message = 'ERROR!';
+                     ->will($this->returnValue($errorResponse));
+        $mockRequest->errorCode = 10;
+        $mockRequest->errorMessage = 'ERROR!';
 
-        $server = $this->getMockServer($mock_request, false);
+        $server = $this->getMockServer($mockRequest, false);
 
-        $this->expectOutputString($error_response);
+        $this->expectOutputString($errorResponse);
 
         $server->process();
     }
 
     public function testProcessException()
     {
-        $mock_request = $this->getMock('Object', null);
-        $server = $this->getMockServer($mock_request, false, false);
+        $mockRequest = $this->getMock('Object', null);
+        $server = $this->getMockServer($mockRequest, false, false);
         $server->input = 'not.there';
 
         $this->setExpectedException('Junior\Serverside\Exception');
@@ -152,7 +152,8 @@ class ServerTest extends PHPUnit_Framework_TestCase {
 
     public function testHandleRequest()
     {
-        $return_value = 'foo';
+        $returnValue = 'foo';
+        /** @var  $server \Junior\Server*/
         $server = $this->getMock('Junior\Server',
                          array('methodExists', 'invokeMethod'),
                          array(),
@@ -163,11 +164,11 @@ class ServerTest extends PHPUnit_Framework_TestCase {
                ->will($this->returnValue(true));
         $server->expects($this->once())
                ->method('invokeMethod')
-               ->will($this->returnValue($return_value));
+               ->will($this->returnValue($returnValue));
 
         $request = $this->getMock('Object', array('isBatch',
                                                   'checkValid',
-                                                  'isNotify',
+                                                  'isNotification',
                                                   'toResponseJSON'));
         $request->expects($this->once())
                 ->method('isBatch')
@@ -176,14 +177,14 @@ class ServerTest extends PHPUnit_Framework_TestCase {
                 ->method('checkValid')
                 ->will($this->returnValue(true));
         $request->expects($this->once())
-                ->method('isNotify')
+                ->method('isNotification')
                 ->will($this->returnValue(false));
         $request->expects($this->once())
                 ->method('toResponseJSON')
                 ->will($this->returnValue(null));
         
         $server->handleRequest($request);
-        $this->assertEquals($return_value, $request->result);
+        $this->assertEquals($returnValue, $request->result);
     }
 
     public function testHandleRequestInvalid()
@@ -216,7 +217,7 @@ class ServerTest extends PHPUnit_Framework_TestCase {
 
     public function testHandleRequestNotify()
     {
-        $return_value = 'foo';
+        $returnValue = 'foo';
         $server = $this->getMock('Junior\Server',
                          array('methodExists', 'invokeMethod'),
                          array(),
@@ -227,11 +228,11 @@ class ServerTest extends PHPUnit_Framework_TestCase {
                ->will($this->returnValue(true));
         $server->expects($this->once())
                ->method('invokeMethod')
-               ->will($this->returnValue($return_value));
+               ->will($this->returnValue($returnValue));
 
         $request = $this->getMock('Object', array('isBatch',
                                                   'checkValid',
-                                                  'isNotify',
+                                                  'isNotification',
                                                   'toResponseJSON'));
         $request->expects($this->once())
                 ->method('isBatch')
@@ -240,7 +241,7 @@ class ServerTest extends PHPUnit_Framework_TestCase {
                 ->method('checkValid')
                 ->will($this->returnValue(true));
         $request->expects($this->once())
-                ->method('isNotify')
+                ->method('isNotification')
                 ->will($this->returnValue(true));
         $request->expects($this->never())->method('toResponseJSON');
         
@@ -261,7 +262,7 @@ class ServerTest extends PHPUnit_Framework_TestCase {
 
         $request = $this->getMock('Object', array('isBatch',
                                                   'checkValid',
-                                                  'isNotify',
+                                                  'isNotification',
                                                   'toResponseJSON'));
         $request->expects($this->once())
                 ->method('isBatch')
@@ -269,19 +270,19 @@ class ServerTest extends PHPUnit_Framework_TestCase {
         $request->expects($this->once())
                 ->method('checkValid')
                 ->will($this->returnValue(true));
-        $request->expects($this->never())->method('isNotify');
+        $request->expects($this->never())->method('isNotification');
         $request->expects($this->once())
                 ->method('toResponseJSON')
                 ->will($this->returnValue(null));
         
         $server->handleRequest($request);
-        $this->assertEquals(constant('Junior\ERROR_METHOD_NOT_FOUND'), $request->error_code);
-        $this->assertEquals("Method not found.", $request->error_message);
+        $this->assertEquals(\Junior\Server::ERROR_METHOD_NOT_FOUND, $request->errorCode);
+        $this->assertEquals("Method not found.", $request->errorMessage);
     }
 
     public function testHandleRequestException()
     {
-        $error_message = 'Error!';
+        $errorMessage = 'Error!';
         $server = $this->getMock('Junior\Server',
                          array('methodExists', 'invokeMethod'),
                          array(),
@@ -292,11 +293,11 @@ class ServerTest extends PHPUnit_Framework_TestCase {
                ->will($this->returnValue(true));
         $server->expects($this->once())
                ->method('invokeMethod')
-               ->will($this->throwException(new \Exception($error_message)));
+               ->will($this->throwException(new \Exception($errorMessage)));
 
         $request = $this->getMock('Object', array('isBatch',
                                                   'checkValid',
-                                                  'isNotify',
+                                                  'isNotification',
                                                   'toResponseJSON'));
         $request->expects($this->once())
                 ->method('isBatch')
@@ -304,20 +305,20 @@ class ServerTest extends PHPUnit_Framework_TestCase {
         $request->expects($this->once())
                 ->method('checkValid')
                 ->will($this->returnValue(true));
-        $request->expects($this->never())->method('isNotify');
+        $request->expects($this->never())->method('isNotification');
         $request->expects($this->once())
                 ->method('toResponseJSON')
                 ->will($this->returnValue(null));
         
         $server->handleRequest($request);
-        $this->assertEquals(constant('Junior\ERROR_EXCEPTION'), $request->error_code);
-        $this->assertEquals($error_message, $request->error_message);
+        $this->assertEquals(\Junior\Server::ERROR_EXCEPTION, $request->errorCode);
+        $this->assertEquals($errorMessage, $request->errorMessage);
     }
 
     public function testHandleRequestBatch()
     {
-        $return_value[] = 'foo';
-        $return_value[] = 'bar';
+        $returnValue[] = 'foo';
+        $returnValue[] = 'bar';
         $server = $this->getMock('Junior\Server',
                          array('methodExists', 'invokeMethod'),
                          array(),
@@ -328,22 +329,22 @@ class ServerTest extends PHPUnit_Framework_TestCase {
                ->will($this->returnValue(true));
         $server->expects($this->exactly(3))
                ->method('invokeMethod')
-               ->will($this->onConsecutiveCalls($return_value[0], $return_value[1], null));
+               ->will($this->onConsecutiveCalls($returnValue[0], $returnValue[1], null));
 
         $request = $this->getMock('Object', array('isBatch',
                                                   'checkValid',
-                                                  'isNotify',
+                                                  'isNotification',
                                                   'toResponseJSON'));
         $request->expects($this->once())
                 ->method('isBatch')
                 ->will($this->returnValue(true));
         $request->expects($this->never())->method('checkValid');
-        $request->expects($this->never())->method('isNotify');
+        $request->expects($this->never())->method('isNotification');
         $request->expects($this->never())->method('toResponseJSON');
 
         $child = $this->getMock('Object', array('isBatch',
                                                 'checkValid',
-                                                'isNotify',
+                                                'isNotification',
                                                 'toResponseJSON'));
         $child->expects($this->exactly(3))
               ->method('isBatch')
@@ -352,15 +353,15 @@ class ServerTest extends PHPUnit_Framework_TestCase {
               ->method('checkValid')
               ->will($this->returnValue(true));
         $child->expects($this->exactly(3))
-              ->method('isNotify')
+              ->method('isNotification')
               ->will($this->onConsecutiveCalls(false, false, true));
         $child->expects($this->exactly(2))
               ->method('toResponseJSON')
-              ->will($this->onConsecutiveCalls($return_value[0], $return_value[1]));
+              ->will($this->onConsecutiveCalls($returnValue[0], $returnValue[1]));
               
         $request->requests = array($child, $child, $child);
 
-        $this->assertEquals("[{$return_value[0]},{$return_value[1]}]", $server->handleRequest($request));
+        $this->assertEquals("[{$returnValue[0]},{$returnValue[1]}]", $server->handleRequest($request));
     }
 
 }

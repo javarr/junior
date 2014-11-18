@@ -15,9 +15,9 @@ class Request
     public $batch;
     public $raw;
     public $result;
-    public $json_rpc;
-    public $error_code;
-    public $error_message;
+    public $jsonRpc;
+    public $errorCode;
+    public $errorMessage;
     public $method;
     public $params;
     public $id;
@@ -30,20 +30,19 @@ class Request
 
         // handle empty request
         if ($this->raw === "") {
-            $this->json_rpc = self::JSON_RPC_VERSION;
-            $this->error_code = self::ERROR_INVALID_REQUEST;
-            $this->error_message = "Invalid Request.";
+            $this->jsonRpc = self::JSON_RPC_VERSION;
+            $this->errorCode = self::ERROR_INVALID_REQUEST;
+            $this->errorMessage = "Invalid Request.";
             return;
         }
 
-        // parse json into object
         $obj = json_decode($json);
 
         // handle json parse error
         if ($obj === null) {
-            $this->json_rpc = self::JSON_RPC_VERSION;
-            $this->error_code = self::ERROR_PARSE_ERROR;
-            $this->error_message = "Parse error.";
+            $this->jsonRpc = self::JSON_RPC_VERSION;
+            $this->errorCode = self::ERROR_PARSE_ERROR;
+            $this->errorMessage = "Parse error.";
             return;
         }
 
@@ -52,9 +51,9 @@ class Request
 
             // empty batch
             if (count($obj) == 0) {
-                $this->json_rpc = self::JSON_RPC_VERSION;
-                $this->error_code = self::ERROR_INVALID_REQUEST;
-                $this->error_message = "Invalid Request.";
+                $this->jsonRpc = self::JSON_RPC_VERSION;
+                $this->errorCode = self::ERROR_INVALID_REQUEST;
+                $this->errorMessage = "Invalid Request.";
                 return;
             }
 
@@ -73,7 +72,7 @@ class Request
 
         // single request
         } else {
-            $this->json_rpc = $obj->jsonrpc;
+            $this->jsonRpc = $obj->jsonrpc;
             $this->method = $obj->method;
             if (property_exists($obj,'params')) {
                 $this->params = $obj->params;
@@ -88,50 +87,47 @@ class Request
     public function checkValid()
     {
         // error code/message already set
-        if ($this->error_code && $this->error_message) {
+        if ($this->errorCode && $this->errorMessage) {
             return false;
         }
 
         // missing jsonrpc or method
-        if (!$this->json_rpc || !$this->method) {
-            $this->error_code = self::ERROR_INVALID_REQUEST;
-            $this->error_message = "Invalid Request.";
+        if (!$this->jsonRpc || !$this->method) {
+            $this->errorCode = self::ERROR_INVALID_REQUEST;
+            $this->errorMessage = "Invalid Request.";
             return false;
         }
 
         // reserved method prefix
         if (substr($this->method,0,4) == 'rpc.') {
-            $this->error_code = self::ERROR_RESERVED_PREFIX;
-            $this->error_message = "Illegal method name; Method cannot start with 'rpc.'";
+            $this->errorCode = self::ERROR_RESERVED_PREFIX;
+            $this->errorMessage = "Illegal method name; Method cannot start with 'rpc.'";
             return false;
         }
 
         // illegal method name
         if (!preg_match(self::VALID_FUNCTION_NAME, $this->method)) {
-            $this->error_code = self::ERROR_INVALID_REQUEST;
-            $this->error_message = "Invalid Request.";
+            $this->errorCode = self::ERROR_INVALID_REQUEST;
+            $this->errorMessage = "Invalid Request.";
             return false;
         }
 
         // mismatched json-rpc version
-        if ($this->json_rpc != "2.0") {
-            $this->error_code = self::ERROR_MISMATCHED_VERSION;
-            $this->error_message = "Client/Server JSON-RPC version mismatch; Expected '2.0'";
+        if ($this->jsonRpc != "2.0") {
+            $this->errorCode = self::ERROR_MISMATCHED_VERSION;
+            $this->errorMessage = "Client/Server JSON-RPC version mismatch; Expected '2.0'";
             return false;
         }
 
-        // valid request
         return true;
     }
 
-    // returns true if request is a batch
     public function isBatch()
     {
         return $this->batch;
     }
 
-    // returns true if request is a notification
-    public function isNotify()
+    public function isNotification()
     {
         return !isset($this->id);
     }
@@ -147,7 +143,7 @@ class Request
             return json_encode($arr);
         // error response
         } else {
-            $arr['error'] = array('code' => $this->error_code, 'message' => $this->error_message);
+            $arr['error'] = array('code' => $this->errorCode, 'message' => $this->errorMessage);
             $arr['id'] = $this->id;
             return json_encode($arr);
         }

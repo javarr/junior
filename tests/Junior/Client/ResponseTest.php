@@ -21,8 +21,8 @@ class ResponseTest extends PHPUnit_Framework_TestCase {
 
         $this->assertEquals($this->jsonrpc_result, $response->result);
         $this->assertEquals($this->id, $response->id);
-        $this->assertEquals($this->error_code, $response->error_code);
-        $this->assertEquals($this->error_message, $response->error_message);
+        $this->assertEquals($this->error_code, $response->errorCode);
+        $this->assertEquals($this->error_message, $response->errorMessage);
     }
 
     public function testNewComplexResponse()
@@ -35,8 +35,8 @@ class ResponseTest extends PHPUnit_Framework_TestCase {
 
         $this->assertEquals($complexResult, $response->result);
         $this->assertEquals($this->id, $response->id);
-        $this->assertEquals($this->error_code, $response->error_code);
-        $this->assertEquals($this->error_message, $response->error_message);
+        $this->assertEquals($this->error_code, $response->errorCode);
+        $this->assertEquals($this->error_message, $response->errorMessage);
     }
 
     public function testToStringResult()
@@ -54,7 +54,7 @@ class ResponseTest extends PHPUnit_Framework_TestCase {
                                                $this->error_code,
                                                $this->error_message);
 
-        $this->assertEquals("{$response->error_code}: {$response->error_message}",
+        $this->assertEquals("{$response->errorCode}: {$response->errorMessage}",
                             $response->__toString());
     }
 
